@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>採寸入力テスト</title>
+  <style>
+    input { width: 80px; padding: 5px; text-align: center; }
+    td:focus-within { background: #eef; }
+  </style>
+</head>
+<body>
+  <h2>採寸入力フォーム（音声 "次" で移動）</h2>
+  <button onclick="startVoice()">🎙️ 音声開始</button>
+  <table border="1">
+    <thead>
+      <tr><th>サイズ</th><th>ウエスト</th><th>股上</th><th>ワタリ</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input value="M" readonly></td>
+        <td><input></td>
+        <td><input></td>
+        <td><input></td>
+        <td><input></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    // Enterキーで右移動
+    document.querySelectorAll("input").forEach((input, i, all) => {
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (all[i + 1]) all[i + 1].focus();
+        }
+      });
+    });
+
+    // 音声認識スタート
+    function startVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recog = new SpeechRecognition();
+      recog.lang = "ja-JP";
+      recog.continuous = true;
+      recog.interimResults = false;
+      recog.onresult = e => {
+        const transcript = e.results[e.resultIndex][0].transcript.trim();
+        console.log("音声認識:", transcript);
+        if (transcript.includes("次")) {
+          const active = document.activeElement;
+          const all = Array.from(document.querySelectorAll("input"));
+          const i = all.indexOf(active);
+          if (i >= 0 && all[i + 1]) all[i + 1].focus();
+        } else {
+          document.activeElement.value += transcript;
+        }
+      };
+      recog.start();
+      alert("🎙️ 音声入力開始。「次」と言うと右に移動します。");
+    }
+  </script>
+</body>
+</html>
